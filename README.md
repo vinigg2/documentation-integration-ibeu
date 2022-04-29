@@ -364,3 +364,70 @@ Essa função tem como objetivo enviar os dados do formulário para API.
 		    print_r($e->getMessage());
 		}
 	}
+
+## Formulário
+
+Se você quiser reutilizar as integrações do selectbox feito no formulário de proscrição ou no formulário de fale conosco, você pode fazer isso aqui.
+
+> Entre no wordpress, no menu lateral, clique em **Contato -> Adicionar novo**
+
+- Puxar a integração das filiais você precisa criar um select passando o nome `filial` e o `id:filial` como no exemplo abaixo:
+
+```
+[select filial id:filial "ESCOLHA A FILIAL" "CENTRAL DE ATENDIMENTO|99"]
+```
+
+- Puxar a integração do assunto no formulário "Fale Conosco" você precisa criar um select passando o nome `assunto` e o `id:assunto` como no exemplo abaixo:
+
+```
+[select assunto id:assunto "Escolha um assunto"]
+```
+Caso queira adicionar uma nova integração como o formulário de prospecção porém passando uma filial fixa como em algumas páginas, você pode fazer isso aqui.
+
+- Primeiro você precisa puxar o formulário de prospecção para a página ou criar um novo formulário com os mesmos campos.
+
+- Você ira acessar o arquivo `ibeu-integrations.php` vá até a função `getPageUnities` e adiciona um novo `case`, exemplo:
+
+```
+// Mudança dos parâmetro de acordo com a URL.
+switch ($page) {
+    case  7503: // /cursos-de-ingles/high-school/
+        $params['codProduto']  =  6;
+        break;
+
+    case  5972: // /exames-internacionais/
+        $params['filial']  =  "99";
+        $params['codProduto']  =  9;
+        break;
+
+    case  5201: // /preparatorios-para-exames/
+        $params['codProduto']  =  1;
+        break;
+
+    case  1556: // /ingles-nas-escolas/
+        $params['filial']  =  "99M";
+        $params['codProduto']  =  12;
+        break;
+
+    case  7018: // /ingles-para-empresas/
+        $params['filial']  =  56;
+        $params['codProduto']  =  1;
+        break;
+
+    case ID_DA_PÁGINA: // /Nova página
+        $params['filial']  =  NUMERO_DA_FILIAL;
+        break;
+}
+```
+
+Depois de adicionado o novo `case`, você precisa adicionar o `ID DA PÁGINA` na hora de submeter o novo formulário, pra isso você agora vai no arquivo `customizer-functions-ibeu.php` proucure a função `integration_ibeu_api_prospect` na linha 153, lendo a função você vai achar uma variável chamada `isFixedParams` ela serve justamente para identificar a página que tem os parâmetros fixos de filias.
+
+Na linha 196 você vai encontrar um `if`, ele identifica quais páginas tem os parâmetros fixos de filiais e seta isso nos parâmetros na hora do envio do formulário, você irá altera-lô, que ficara assim:
+
+```
+if ($RequestURI === 7702 || $RequestURI === ID_DA_NOVA_PAGINA) {
+    $isFixedParams  =  true;
+}
+```
+
+Feito, se acessar agora a página com o novo formulário e submeter ele você irar percebe que os valores vão ser enviados corretamente.
